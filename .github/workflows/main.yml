@@ -21,36 +21,40 @@ jobs:
         node-version: [16, 18, 20]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Install backend dependencies
-      run: |
-        cd backend
-        npm install
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
 
-    - name: Run tests
-      run: npm test
-      env:
-        MONGO_URI: ${{ secrets.MONGO_URI }}
+      - name: Run tests
+        run: |
+          cd backend
+          npm test
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
 
-    - name: Start the backend
-      run: node backend/src/index.js
-      env:
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        PORT: 3000
+      - name: Start the backend
+        run: |
+          cd backend
+          node src/index.js
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          PORT: 3000
 
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm install
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
 
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
