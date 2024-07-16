@@ -5,6 +5,7 @@ const cors = require('cors');
 const config = require('./config');
 const userRoutes = require('./routes/userRoutes');
 const itemRoutes = require('./routes/itemRoutes');
+const neighborhoodRoutes = require('./routes/neighborhoodRoutes');
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/neighborhoods', neighborhoodRoutes);
 
 // Start server
 const server = app.listen(config.port, () => {

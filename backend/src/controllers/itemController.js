@@ -22,3 +22,19 @@ exports.createItem = async (req, res) => {
   }
 };
 
+exports.deleteItem = async (req, res) => {
+  try {
+    const itemName = req.params.name.trim(); // Trim any extra whitespace
+    const result = await Item.deleteOne({ name: itemName });
+
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: 'Item deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Item not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting item');
+  }
+};
+
