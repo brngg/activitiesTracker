@@ -1,7 +1,7 @@
 // src/server.js
-/*const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const config = require('./config');
-const app = require('./index');
+const app = require('./app');
 
 // MongoDB connection
 const connectDB = async () => {
@@ -50,4 +50,4 @@ process.on('uncaughtException', async (err) => {
   await gracefulShutdown('Uncaught Exception');
 });
 
-module.exports = server; // Export for testing purposes*/
+module.exports = server; // Export for testing purposes
