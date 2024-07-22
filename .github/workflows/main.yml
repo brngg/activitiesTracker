@@ -1,11 +1,9 @@
 name: CI/CD Pipeline
-
 on:
   push:
     branches:
       - main
       - feature/*
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -30,8 +28,8 @@ jobs:
         run: |
           cd backend
           npm install
-        
-      - name: Run tests
+       
+      - name: Run backend tests
         run: |
           cd backend
           npm test
@@ -41,10 +39,16 @@ jobs:
       - name: Start the backend
         run: |
           cd backend
-          node src/server.js
+          node src/server.js &
+          echo $! > .pidfile
+          sleep 10  # Give the server time to start
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           PORT: 3000
+
+      - name: Check if server is running
+        run: |
+          curl http://localhost:3000/health || exit 1
 
       - name: Install frontend dependencies
         run: |
@@ -55,3 +59,11 @@ jobs:
         run: |
           cd frontend
           npm run build
+
+      - name: Stop the backend
+        if: always()
+        run: |
+          if [ -f backend/.pidfile ]; then
+            kill $(cat backend/.pidfile)
+            rm backend/.pidfile
+          fi
