@@ -9,17 +9,14 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     services:
       mongo:
         image: mongo:latest
         ports:
           - 27017:27017
-
     strategy:
       matrix:
         node-version: [16, 18, 20]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -32,25 +29,8 @@ jobs:
       - name: Install backend dependencies
         run: |
           cd backend
-          retry() {
-            local n=1
-            local max=5
-            local delay=5
-            while true; do
-              "$@" && break || {
-                if [[ $n -lt $max ]]; then
-                  ((n++))
-                  echo "Command failed. Attempt $n/$max:"
-                  sleep $delay;
-                else
-                  echo "The command has failed after $n attempts."
-                  return 1
-                fi
-              }
-            }
-          }
-          retry npm install
-
+          npm install
+        
       - name: Run tests
         run: |
           cd backend
@@ -69,24 +49,7 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd frontend
-          retry() {
-            local n=1
-            local max=5
-            local delay=5
-            while true; do
-              "$@" && break || {
-                if [[ $n -lt $max ]]; then
-                  ((n++))
-                  echo "Command failed. Attempt $n/$max:"
-                  sleep $delay;
-                else
-                  echo "The command has failed after $n attempts."
-                  return 1
-                fi
-              }
-            }
-          }
-          retry npm install
+          npm install
 
       - name: Build frontend
         run: |

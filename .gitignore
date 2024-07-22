@@ -41,5 +41,5 @@ Thumbs.db
 # Project specific
 /backend/src/data/
 *.csv
-/backend/src/scripts/import_neighborhoods.js
-/backend/src/scripts/
+#/backend/src/scripts/import_neighborhoods.js
+#/backend/src/scripts/
