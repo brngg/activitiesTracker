@@ -21,11 +21,11 @@ describe('Neighborhood Routes', () => {
     it('should return neighborhoods in the specified borough', async () => {
         const borough = 'Brooklyn';
         const response = await request(app).get(`/api/neighborhoods/${borough}`);
-        console.log('Response:', response.body);
+        //console.log('Response:', response.body);
         // Log the response body to see what data is returned
         expect(response.status).toBe(200);
         expect(response.body).toBeInstanceOf(Array);
-        console.log('Neighborhoods in response:', response.body);
+        //console.log('Neighborhoods in response:', response.body);
         expect(response.body.length).toBeGreaterThan(0); // Ensure some data is returned
         expect(response.body).toContain('Williamsburg');
         expect(response.body).toContain('Bushwick');
