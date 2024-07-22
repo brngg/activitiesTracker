@@ -32,7 +32,24 @@ jobs:
       - name: Install backend dependencies
         run: |
           cd backend
-          npm install
+          retry() {
+            local n=1
+            local max=5
+            local delay=5
+            while true; do
+              "$@" && break || {
+                if [[ $n -lt $max ]]; then
+                  ((n++))
+                  echo "Command failed. Attempt $n/$max:"
+                  sleep $delay;
+                else
+                  echo "The command has failed after $n attempts."
+                  return 1
+                fi
+              }
+            }
+          }
+          retry npm install
 
       - name: Run tests
         run: |
@@ -52,7 +69,24 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd frontend
-          npm install
+          retry() {
+            local n=1
+            local max=5
+            local delay=5
+            while true; do
+              "$@" && break || {
+                if [[ $n -lt $max ]]; then
+                  ((n++))
+                  echo "Command failed. Attempt $n/$max:"
+                  sleep $delay;
+                else
+                  echo "The command has failed after $n attempts."
+                  return 1
+                fi
+              }
+            }
+          }
+          retry npm install
 
       - name: Build frontend
         run: |
