@@ -41,7 +41,7 @@ jobs:
       - name: Start the backend
         run: |
           cd backend
-          node src/index.js
+          node src/server.js
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           PORT: 3000
