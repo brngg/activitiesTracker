@@ -39,7 +39,7 @@ Thumbs.db
 *.sw?
 
 # Project specific
-/backend/src/data/
-*.csv
+#/backend/src/data/
+#*.csv
 #/backend/src/scripts/import_neighborhoods.js
 #/backend/src/scripts/
