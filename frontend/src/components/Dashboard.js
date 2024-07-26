@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import ItemList from './ItemList';
 import AddItemForm from './AddItemForm';
 import { API_BASE_URL } from '../config';
@@ -15,12 +16,9 @@ function Dashboard() {
 
   const fetchItems = async () => {
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) {
-        throw new Error('Failed to fetch items');
-      }
-      const data = await response.json();
-      setItems(data);
+      const response = await axios.get(API_URL);
+      setItems(response.data);
+      setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error fetching items:', error);
       setError('Failed to load items. Please try again later.');
@@ -29,16 +27,9 @@ function Dashboard() {
 
   const addItem = async (newItem) => {
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newItem),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add item');
-      }
-      const addedItem = await response.json();
-      setItems(prevItems => [...prevItems, addedItem]);
+      const response = await axios.post(API_URL, newItem);
+      setItems(prevItems => [...prevItems, response.data]);
+      setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error adding item:', error);
       setError('Failed to add item. Please try again.');
@@ -47,11 +38,9 @@ function Dashboard() {
 
   const deleteItem = async (name) => {
     try {
-      const response = await fetch(`${API_URL}/${encodeURIComponent(name)}`, { method: 'DELETE' });
-      if (!response.ok) {
-        throw new Error('Failed to delete item');
-      }
+      await axios.delete(`${API_URL}/${encodeURIComponent(name)}`);
       setItems(prevItems => prevItems.filter(item => item.name !== name));
+      setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error deleting item:', error);
       setError('Failed to delete item. Please try again.');
@@ -59,9 +48,9 @@ function Dashboard() {
   };
 
   return (
-    <div className="dashboard">
-      <h1>Item Dashboard</h1>
-      {error && <div className="error-message">{error}</div>}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Item Dashboard</h1>
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">{error}</div>}
       <AddItemForm addItem={addItem} />
       <ItemList items={items} deleteItem={deleteItem} />
     </div>

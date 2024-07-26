@@ -4,7 +4,7 @@ const itemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { type: String, required: true },
   location: {
-    city: { type: String, required: true },
+    neighborhood: { type: String, required: true },
     borough: { type: String, required: true },
     address: { type: String, required: true },
     zipcode: { 

@@ -4,7 +4,7 @@ const router = express.Router();
 const itemController = require('../controllers/itemController');
 
 router.post('/', itemController.createItem);
-// Add other item routes as needed
 router.delete('/:name', itemController.deleteItem);
 router.put('/:id', itemController.modifyItem);
+
 module.exports = router;

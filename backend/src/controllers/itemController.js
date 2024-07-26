@@ -7,7 +7,7 @@ exports.createItem = async (req, res) => {
       name: req.body.name,
       type: req.body.type,
       location: {
-        city: req.body.location.city,
+        neighborhood: req.body.location.neighborhood,
         borough: req.body.location.borough,
         address: req.body.location.address,
         zipcode: req.body.location.zipcode
@@ -48,7 +48,7 @@ exports.modifyItem = async (req, res) => {
     const allowedUpdates = [
       'name', 
       'type', 
-      'location.city', 
+      'location.neighborhood', 
       'location.borough', 
       'location.address', 
       'location.zipcode', 
