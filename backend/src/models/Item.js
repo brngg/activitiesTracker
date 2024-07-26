@@ -1,3 +1,4 @@
+// src/models/Item.js
 const mongoose = require('mongoose');
 
 const itemSchema = new mongoose.Schema({
@@ -19,7 +20,8 @@ const itemSchema = new mongoose.Schema({
     }
   },
   dateAdded: { type: Date, default: Date.now },
-  status: { type: Boolean, required: true, default: false }
+  status: { type: Boolean, required: true, default: false },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true } // Reference to the user
 });
 
 module.exports = mongoose.model('Item', itemSchema);

@@ -53,7 +53,7 @@ async function importNeighborhoods() {
               { upsert: true }
             );
           }
-          console.log('All neighborhoods processed successfully');
+          //console.log('All neighborhoods processed successfully');
           resolve();
         } catch (err) {
           console.error('Error processing neighborhoods:', err);

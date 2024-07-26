@@ -5,6 +5,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const neighborhoodRoutes = require('./routes/neighborhoodRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -19,5 +20,6 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/neighborhoods', neighborhoodRoutes);
+app.use('/api/auth', authRoutes);
 
 module.exports = app;
