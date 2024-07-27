@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 
-const AddItemForm = ({ addItem }) => {
+const AddItemForm = ({ addItem, setError }) => {
   const [formData, setFormData] = useState({
     name: '',
     type: '',
@@ -22,15 +22,18 @@ const AddItemForm = ({ addItem }) => {
   const [zipcodes, setZipcodes] = useState([]);
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/neighborhoods`)
+    const token = localStorage.getItem('token');
+    axios.get(`${API_BASE_URL}/neighborhoods`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(response => {
-        console.log('Boroughs fetched:', response.data);
         setBoroughs(response.data);
       })
       .catch(error => {
         console.error('Error fetching boroughs:', error);
+        setError('Failed to fetch boroughs. Please try again.');
       });
-  }, []);
+  }, [setError]); // Ensure setError is handled correctly
 
   const handleBoroughChange = (event) => {
     const { value } = event.target;
@@ -44,19 +47,21 @@ const AddItemForm = ({ addItem }) => {
       }
     }));
 
-    axios.get(`${API_BASE_URL}/neighborhoods/${value}`)
+    const token = localStorage.getItem('token');
+    axios.get(`${API_BASE_URL}/neighborhoods/${value}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(response => {
-        console.log('Neighborhoods fetched for borough:', response.data);
         setNeighborhoods(response.data);
       })
       .catch(error => {
         console.error('Error fetching neighborhoods:', error);
+        setError('Failed to fetch neighborhoods. Please try again.');
       });
   };
 
   const handleNeighborhoodChange = (event) => {
     const { value } = event.target;
-    console.log('Neighborhood selected:', value);
     setFormData(prevData => ({
       ...prevData,
       location: {
@@ -65,16 +70,18 @@ const AddItemForm = ({ addItem }) => {
         zipcode: ''
       }
     }));
-  
+
     if (value && formData.location.borough) {
-      console.log('Fetching zipcodes for:', formData.location.borough, value);
-      axios.get(`${API_BASE_URL}/neighborhoods/${formData.location.borough}/${value}`)
+      const token = localStorage.getItem('token');
+      axios.get(`${API_BASE_URL}/neighborhoods/${formData.location.borough}/${value}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
         .then(response => {
-          console.log('Zipcodes fetched:', response.data);
           setZipcodes(response.data);
         })
         .catch(error => {
           console.error('Error fetching zipcodes:', error);
+          setError('Failed to fetch zipcodes. Please try again.');
         });
     } else {
       setZipcodes([]);
@@ -102,18 +109,22 @@ const AddItemForm = ({ addItem }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    addItem(formData);
-    setFormData({
-      name: '',
-      type: '',
-      location: {
-        city: '',
-        borough: '',
-        neighborhood: '',
-        address: '',
-        zipcode: ''
-      },
-      status: false
+    addItem(formData).then(() => {
+      setFormData({
+        name: '',
+        type: '',
+        location: {
+          city: '',
+          borough: '',
+          neighborhood: '',
+          address: '',
+          zipcode: ''
+        },
+        status: false
+      });
+    }).catch(error => {
+      console.error('Error adding item:', error);
+      setError('Failed to add item. Please try again.');
     });
   };
 
@@ -241,6 +252,7 @@ const AddItemForm = ({ addItem }) => {
 
 AddItemForm.propTypes = {
   addItem: PropTypes.func.isRequired,
+  setError: PropTypes.func.isRequired,
 };
 
 export default AddItemForm;

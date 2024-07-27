@@ -16,9 +16,12 @@ function Dashboard() {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get(API_URL);
+      const token = localStorage.getItem('token'); // Assuming you store the token in localStorage after login
+      const response = await axios.get(API_URL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setItems(response.data);
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (error) {
       console.error('Error fetching items:', error);
       setError('Failed to load items. Please try again later.');
@@ -27,20 +30,42 @@ function Dashboard() {
 
   const addItem = async (newItem) => {
     try {
-      const response = await axios.post(API_URL, newItem);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(API_URL, newItem, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       setItems(prevItems => [...prevItems, response.data]);
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (error) {
       console.error('Error adding item:', error);
-      setError('Failed to add item. Please try again.');
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response:', error.response.data);
+        setError(`Failed to add item: ${error.response.data.message || 'Unknown error'}`);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error request:', error.request);
+        setError('Failed to add item: No response from server');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+        setError(`Failed to add item: ${error.message}`);
+      }
     }
   };
 
   const deleteItem = async (name) => {
     try {
-      await axios.delete(`${API_URL}/${encodeURIComponent(name)}`);
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/${encodeURIComponent(name)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setItems(prevItems => prevItems.filter(item => item.name !== name));
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (error) {
       console.error('Error deleting item:', error);
       setError('Failed to delete item. Please try again.');
