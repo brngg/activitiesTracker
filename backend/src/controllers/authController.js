@@ -74,15 +74,13 @@ exports.loginUser = async (req, res) => {
         }
 
         const payload = {
-            user: {
-                id: user.id
-            }
+            userId: user.id
         };
 
         jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            { expiresIn: 360000 },
+            { expiresIn: 360000 }, // Token expiration time
             (err, token) => {
                 if (err) throw err;
                 res.json({
@@ -96,4 +94,5 @@ exports.loginUser = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
 
