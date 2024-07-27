@@ -5,7 +5,7 @@ const User = require('../models/User');
 const authMiddleware = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    //console.log('Received token:', token);
+    console.log('Received token:', token);
 
     if (!token) {
       console.log('No token provided');
@@ -13,9 +13,10 @@ const authMiddleware = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    //console.log('Decoded token:', decoded);
+    console.log('Decoded token:', decoded);
 
-    const user = await User.findById(decoded.userId); // Ensure `userId` matches your JWT payload
+    const user = await User.findById(decoded.userId);
+    console.log('User found:', user);
 
     if (!user) {
       console.log('User not found');
@@ -30,6 +31,7 @@ const authMiddleware = async (req, res, next) => {
     res.status(401).json({ message: 'Authentication failed' });
   }
 };
+
 
 module.exports = authMiddleware;
 
