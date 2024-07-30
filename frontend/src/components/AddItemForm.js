@@ -237,7 +237,7 @@ const AddItemForm = ({ addItem, setError }) => {
             onChange={handleChange}
             className="mr-2"
           />
-          <span className="text-sm text-gray-700">Active</span>
+          <span className="text-sm text-gray-700">Done</span>
         </label>
         <button 
           type="submit" 

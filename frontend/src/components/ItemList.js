@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import PropTypes from 'prop-types';
+import { API_BASE_URL } from '../config';
+import AddItemForm from './AddItemForm'; // Ensure the AddItemForm component is correctly imported
+
+const API_URL = `${API_BASE_URL}/items`;
+const SAVED_ITEMS_URL = `${API_BASE_URL}/items/saved`;
 
 const ACTIVITY_TYPES = [
   'Restaurant',
@@ -13,7 +19,8 @@ const ACTIVITY_TYPES = [
   'Other'
 ];
 
-const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
+const ItemList = ({ setError }) => {
+  const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterBorough, setFilterBorough] = useState('');
@@ -24,12 +31,77 @@ const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
   const [boroughs, setBoroughs] = useState([]);
 
   useEffect(() => {
+    const fetchSavedItems = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(SAVED_ITEMS_URL, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setItems(response.data);
+      } catch (error) {
+        console.error('Error fetching saved items:', error);
+        setError('Failed to fetch saved items. Please try again.');
+      }
+    };
+
+    fetchSavedItems();
+  }, [setError]);
+
+  useEffect(() => {
     const uniqueBoroughs = [...new Set(items.map(item => item.location.borough))];
     setBoroughs(uniqueBoroughs);
   }, [items]);
 
+  const addItem = async (newItem) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(API_URL, newItem, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      setItems(prevItems => [...prevItems, response.data]);
+      setError(null);
+    } catch (error) {
+      console.error('Error adding item:', error);
+      setError('Failed to add item. Please try again.');
+    }
+  };
+
+  const updateItem = async (id, updatedItem) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${API_URL}/${id}`, updatedItem, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      setItems(prevItems => prevItems.map(item => item._id === id ? response.data : item));
+      setError(null);
+    } catch (error) {
+      console.error('Error updating item:', error);
+      setError('Failed to update item. Please try again.');
+    }
+  };
+
+  const deleteItem = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setItems(prevItems => prevItems.filter(item => item._id !== id));
+      setError(null);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      setError('Failed to delete item. Please try again.');
+    }
+  };
+
   const filteredItems = items
-    .filter(item => 
+    .filter(item =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (filterType === '' || item.type === filterType) &&
       (filterBorough === '' || item.location.borough === filterBorough) &&
@@ -53,6 +125,8 @@ const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
 
   return (
     <div className="mt-8">
+      <AddItemForm addItem={addItem} setError={setError} />
+      
       <div className="mb-4">
         <input
           type="text"
@@ -80,7 +154,9 @@ const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
           onChange={(e) => setFilterBorough(e.target.value)}
         >
           <option value="">Filter by Borough</option>
-          {/* Add borough options dynamically based on your data */}
+          {boroughs.map(borough => (
+            <option key={borough} value={borough}>{borough}</option>
+          ))}
         </select>
         <select 
           className="p-2 border border-gray-300 rounded-md"
@@ -88,8 +164,8 @@ const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
           onChange={(e) => setFilterStatus(e.target.value)}
         >
           <option value="">Filter by Status</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
+          <option value="true">Done</option>
+          <option value="false">Not Done</option>
         </select>
         <select 
           className="p-2 border border-gray-300 rounded-md"
@@ -114,7 +190,7 @@ const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
           </tr>
         </thead>
         <tbody className="bg-white">
-          {filteredItems.map(item => (
+          {currentItems.map(item => (
             <tr key={item._id} className="border-b border-gray-200">
               <td className="px-6 py-4 text-sm text-gray-900 text-left">{item.name}</td>
               <td className="px-6 py-4 text-sm text-gray-500 text-left">
@@ -122,35 +198,26 @@ const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
                   {item.type}
                 </span>
               </td>
-              <td className="px-6 py-4 text-sm text-gray-500 text-left">
-                <div>{item.location.neighborhood}, {item.location.borough}</div>
-                <div>{item.location.address}, {item.location.zipcode}</div>
+              <td className="px-6 py-4 text-sm text-gray-900 text-left">
+                {`${item.location.neighborhood}, ${item.location.borough}, ${item.location.address}, ${item.location.zipcode}`}
               </td>
               <td className="px-6 py-4 text-sm text-left">
                 <span className={`${item.status ? 'text-green-600' : 'text-red-600'}`}>
-                  {item.status ? 'Active' : 'Inactive'}
+                  {item.status ? 'Done' : 'Not Done'}
                 </span>
               </td>
               <td className="px-6 py-4 text-right text-sm font-medium">
-                <button 
-                  onClick={() => toggleFavorite(item.name)} 
-                  className={`text-yellow-500 hover:text-yellow-600 mr-2 ${item.isFavorite ? 'text-yellow-600' : ''}`}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </button>
                 <button
-                  onClick={() => editItem(item.name)}
-                  className="text-blue-600 hover:text-blue-900 mr-2"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => deleteItem(item.name)}
-                  className="text-red-600 hover:text-red-900"
+                  onClick={() => deleteItem(item._id)}
+                  className="text-red-600 hover:text-red-900 mr-2"
                 >
                   Delete
+                </button>
+                <button
+                  onClick={() => updateItem(item._id, { ...item, status: !item.status })}
+                  className="text-blue-600 hover:text-blue-900"
+                >
+                  {item.status ? 'Deactivate' : 'Activate'}
                 </button>
               </td>
             </tr>
@@ -158,55 +225,29 @@ const ItemList = ({ items, deleteItem, editItem, toggleFavorite }) => {
         </tbody>
       </table>
 
-      <div className="mt-4 flex justify-center">
-        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          {Array.from({ length: Math.ceil(filteredItems.length / itemsPerPage) }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => paginate(index + 1)}
-              className={`relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium ${
-                currentPage === index + 1 ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === Math.ceil(filteredItems.length / itemsPerPage)}
-            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-          >
-            Next
-          </button>
-        </nav>
+      <div className="flex justify-between items-center mt-4">
+        <button 
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span>Page {currentPage}</span>
+        <button 
+          onClick={() => paginate(currentPage + 1)}
+          disabled={indexOfLastItem >= filteredItems.length}
+          className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );
 };
 
 ItemList.propTypes = {
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      type: PropTypes.oneOf(ACTIVITY_TYPES).isRequired,
-      location: PropTypes.shape({
-        neighborhood: PropTypes.string,
-        borough: PropTypes.string.isRequired,
-        address: PropTypes.string.isRequired,
-        zipcode: PropTypes.string.isRequired
-      }).isRequired,
-      status: PropTypes.bool.isRequired
-    })
-  ).isRequired,
-  deleteItem: PropTypes.func.isRequired
+  setError: PropTypes.func.isRequired,
 };
 
 export default ItemList;

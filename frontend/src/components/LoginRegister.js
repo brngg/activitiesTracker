@@ -14,7 +14,7 @@ function LoginRegister() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-  
+
     try {
       let response;
       if (isLogin) {
@@ -22,21 +22,30 @@ function LoginRegister() {
       } else {
         response = await axios.post(`${API_BASE_URL}/auth/register`, { username, email, password });
       }
-  
-      // Assuming the server returns a token
+
       const token = response.data.token;
       localStorage.setItem('token', token);
-  
-      // Reset form fields
+
       setEmail('');
       setPassword('');
       if (!isLogin) setUsername('');
-  
-      // Redirect to dashboard or home page
+
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred');
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else if (err.response && err.response.data && err.response.data.errors) {
+        const errorMsg = err.response.data.errors.map(error => error.msg).join(', ');
+        setError(errorMsg);
+      } else {
+        setError('An error occurred');
+      }
     }
+  };
+
+  const toggleFormType = () => {
+    setIsLogin(!isLogin);
+    setError('');
   };
 
   return (
@@ -128,7 +137,7 @@ function LoginRegister() {
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button
                 className="font-medium text-indigo-600 hover:text-indigo-500"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={toggleFormType}
               >
                 {isLogin ? 'Sign Up' : 'Sign In'}
               </button>
