@@ -28,13 +28,15 @@ jobs:
         run: |
           cd backend
           npm install
-       
+
       - name: Run backend tests
         run: |
           cd backend
           npm test
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: 3000
 
       - name: Start the backend
         run: |
@@ -44,6 +46,7 @@ jobs:
           sleep 10  # Give the server time to start
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
           PORT: 3000
 
       - name: Check if server is running
