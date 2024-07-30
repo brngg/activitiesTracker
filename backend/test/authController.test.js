@@ -4,7 +4,6 @@ const app = require('../src/app');
 const User = require('../src/models/User');
 const bcrypt = require('bcryptjs');
 
-
 describe('Auth Controller', () => {
   // Clean up the database before each test
   beforeEach(async () => {
@@ -116,7 +115,7 @@ describe('Auth Controller', () => {
         .send(loginData);
 
       expect(response.status).toBe(400);
-      expect(response.body.msg).toBe('Invalid Credentials');
+      expect(response.body.message).toBe('Invalid email or password');
     });
 
     it('should not login a user with incorrect password', async () => {
@@ -130,7 +129,7 @@ describe('Auth Controller', () => {
         .send(loginData);
 
       expect(response.status).toBe(400);
-      expect(response.body.msg).toBe('Invalid Credentials');
+      expect(response.body.message).toBe('Invalid email or password');
     });
   });
 });
